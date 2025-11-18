@@ -36,7 +36,7 @@ st.markdown("""
     .main {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
-    
+
     .header-container {
         background: linear-gradient(135deg, #1F4E78 0%, #2c5f8d 100%);
         padding: 2rem;
@@ -46,19 +46,19 @@ st.markdown("""
         text-align: center;
         color: white;
     }
-    
+
     .header-title {
         font-size: 2.5rem;
         font-weight: bold;
         margin-bottom: 0.5rem;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
-    
+
     .header-subtitle {
         font-size: 1.1rem;
         opacity: 0.95;
     }
-    
+
     .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem;
@@ -68,23 +68,23 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         transition: transform 0.3s;
     }
-    
+
     .metric-card:hover {
         transform: translateY(-5px);
     }
-    
+
     .metric-value {
         font-size: 2.2rem;
         font-weight: bold;
         margin: 0.5rem 0;
     }
-    
+
     .metric-label {
         font-size: 0.95rem;
         opacity: 0.9;
         font-weight: 500;
     }
-    
+
     /* Refined Tab Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 1rem;
@@ -92,7 +92,7 @@ st.markdown("""
         border-bottom: 2px solid #e0e0e0;
         padding-bottom: 0;
     }
-    
+
     .stTabs [data-baseweb="tab"] {
         padding: 0.8rem 1.5rem;
         font-weight: 600;
@@ -108,7 +108,7 @@ st.markdown("""
         color: white !important; /* Active tab text */
         box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     }
-    
+
     .footer {
         text-align: center;
         padding: 2rem;
@@ -117,7 +117,7 @@ st.markdown("""
         border-top: 2px solid #ddd;
         margin-top: 3rem;
     }
-    
+
     /* Updated Info Box Styling (White Background) */
     .info-box {
         background-color: #ffffff;
@@ -147,9 +147,12 @@ DEFAULT_PARAMS = {
     'h': {'mean': 100, 'std': 25, 'min': 50, 'max': 150, 'unit': 'ft', 'label': 'Net Pay Thickness'},
     'NTG': {'mean': 0.85, 'std': 0.2, 'min': 0.4, 'max': 1.0, 'unit': 'fraction', 'label': 'Net-to-Gross Ratio'},
     'POR': {'mean': 0.32, 'std': 0.02, 'min': 0.28, 'max': 0.36, 'unit': 'fraction', 'label': 'Porosity'},
-    'Swi': {'mean': 0.15, 'std': 0.03, 'min': 0.08, 'max': 0.22, 'unit': 'fraction', 'label': 'Initial Water Saturation'},
-    'Boi': {'mean': 0.0024, 'std': 0.0001, 'min': 0.0021, 'max': 0.0026, 'unit': 'RB/STB', 'label': 'Oil Formation Volume Factor'}
+    'Swi': {'mean': 0.15, 'std': 0.03, 'min': 0.08, 'max': 0.22, 'unit': 'fraction',
+            'label': 'Initial Water Saturation'},
+    'Boi': {'mean': 0.0024, 'std': 0.0001, 'min': 0.0021, 'max': 0.0026, 'unit': 'RB/STB',
+            'label': 'Oil Formation Volume Factor'}
 }
+
 
 # --- Helper: Robust Image Finder ---
 def find_image_path(keywords):
@@ -168,6 +171,7 @@ def find_image_path(keywords):
         pass
     return None
 
+
 # Functions
 def get_truncated_normal(mean, std, lower, upper):
     """Generate truncated normal distribution parameters"""
@@ -183,6 +187,7 @@ def get_truncated_normal(mean, std, lower, upper):
     except Exception as e:
         st.error(f"Error in truncated normal distribution: {str(e)}")
         return None
+
 
 def run_simulation(params, n_samples, seed):
     """Execute Monte Carlo simulation using Latin Hypercube Sampling"""
@@ -213,13 +218,13 @@ def run_simulation(params, n_samples, seed):
         # Calculate STOIIP
         # Formula: N = (7758 * A * h * NTG * phi * (1-Sw)) / Boi
         stoiip = (
-            7758 * params_df['area'] *
-            params_df['h'] *
-            params_df['NTG'] *
-            params_df['POR'] *
-            (1 - params_df['Swi']) /
-            params_df['Boi']
-        ) / 1000000 # Convert to MMbbl
+                         7758 * params_df['area'] *
+                         params_df['h'] *
+                         params_df['NTG'] *
+                         params_df['POR'] *
+                         (1 - params_df['Swi']) /
+                         params_df['Boi']
+                 ) / 1000000  # Convert to MMbbl
 
         # Check for invalid values
         if stoiip.isnull().any() or (stoiip <= 0).any():
@@ -231,9 +236,9 @@ def run_simulation(params, n_samples, seed):
         statistics = {
             'Mean': float(stoiip.mean()),
             'Median': float(stoiip.median()),
-            'P10 (Optimistic)': float(np.percentile(stoiip, 90)), # P10 is usually higher for reserves
+            'P10 (Optimistic)': float(np.percentile(stoiip, 90)),  # P10 is usually higher for reserves
             'P50 (Most Likely)': float(np.percentile(stoiip, 50)),
-            'P90 (Conservative)': float(np.percentile(stoiip, 10)), # P90 is usually lower for reserves
+            'P90 (Conservative)': float(np.percentile(stoiip, 10)),  # P90 is usually lower for reserves
             'Std Deviation': float(stoiip.std()),
             'Minimum': float(stoiip.min()),
             'Maximum': float(stoiip.max()),
@@ -246,6 +251,7 @@ def run_simulation(params, n_samples, seed):
     except Exception as e:
         st.error(f"Simulation error: {str(e)}")
         raise
+
 
 def create_histogram(stoiip_data, stats):
     """Create interactive histogram using Plotly"""
@@ -281,6 +287,7 @@ def create_histogram(stoiip_data, stats):
     except Exception as e:
         st.error(f"Error creating histogram: {str(e)}")
         return None
+
 
 def create_cdf(stoiip_data, stats):
     """Create interactive CDF using Plotly"""
@@ -320,6 +327,7 @@ def create_cdf(stoiip_data, stats):
         st.error(f"Error creating CDF: {str(e)}")
         return None
 
+
 def create_box_plot(params_df):
     """Create box plot for parameter distributions"""
     try:
@@ -346,6 +354,7 @@ def create_box_plot(params_df):
     except Exception as e:
         st.error(f"Error creating box plot: {str(e)}")
         return None
+
 
 def export_to_excel(results_df, params_df, statistics, params_input):
     """Export results to Excel file"""
@@ -381,6 +390,7 @@ def export_to_excel(results_df, params_df, statistics, params_input):
         # Return None on error so the button doesn't appear/crash
         return None
 
+
 # --- Header (Original Design maintained with image support) ---
 # Using columns inside the styled div concept isn't strictly possible with markdown alone,
 # so we use st.columns below the markdown title if we want images, or inject HTML.
@@ -409,7 +419,6 @@ with c3:
     # Look for anniversary/other logo
     a_path = find_image_path(['anniversary', '22', 'a.jpg', 'a.png'])
     if a_path: st.image(a_path, use_container_width=True)
-
 
 # Sidebar
 with st.sidebar:
@@ -453,7 +462,7 @@ with st.sidebar:
             3. Click 'Run Simulation'
             4. View results
             5. Export data
-            
+
             **P-Values:**
             - P90: Conservative
             - P50: Most likely
@@ -489,7 +498,7 @@ with tab1:
         </div>
     """, unsafe_allow_html=True)
 
-    params_input = {} # Capture current inputs for export
+    params_input = {}  # Capture current inputs for export
     col1, col2 = st.columns(2)
     param_keys = list(DEFAULT_PARAMS.keys())
 
@@ -552,7 +561,8 @@ with tab1:
                         if params_input[key]['min'] >= params_input[key]['max']:
                             st.error(f"❌ Error in {params_input[key]['label']}: Min must be less than Max")
                             valid = False
-                        if params_input[key]['mean'] < params_input[key]['min'] or params_input[key]['mean'] > params_input[key]['max']:
+                        if params_input[key]['mean'] < params_input[key]['min'] or params_input[key]['mean'] > \
+                                params_input[key]['max']:
                             st.error(f"❌ Error in {params_input[key]['label']}: Mean must be between Min and Max")
                             valid = False
 
@@ -562,7 +572,7 @@ with tab1:
                         st.session_state.results_df = results_df
                         st.session_state.params_df = params_df
                         st.session_state.statistics = statistics
-                        st.session_state.params_input = params_input # Store for export
+                        st.session_state.params_input = params_input  # Store for export
 
                         st.success("✅ Simulation completed successfully!")
                         st.balloons()
@@ -658,11 +668,12 @@ with tab3:
         df_corr = pd.DataFrame(corr_data).sort_values('Correlation', key=abs, ascending=True)
 
         fig_tornado = px.bar(df_corr, x='Correlation', y='Parameter', orientation='h',
-                            title="Parameter Impact on STOIIP (Spearman Rank Correlation)",
-                            color='Correlation', color_continuous_scale='RdBu_r')
+                             title="Parameter Impact on STOIIP (Spearman Rank Correlation)",
+                             color='Correlation', color_continuous_scale='RdBu_r')
         fig_tornado.update_layout(height=400)
         st.plotly_chart(fig_tornado, use_container_width=True)
-        st.info("Longer bars indicate parameters that have a stronger influence on the oil reserves. Red = Positive correlation (Higher param -> Higher oil), Blue = Negative (Higher param -> Lower oil).")
+        st.info(
+            "Longer bars indicate parameters that have a stronger influence on the oil reserves. Red = Positive correlation (Higher param -> Higher oil), Blue = Negative (Higher param -> Lower oil).")
 
         st.markdown("---")
 
@@ -672,7 +683,8 @@ with tab3:
         data_conv = st.session_state.results_df['STOIIP'].values
         limit = min(5000, len(data_conv))
         running_mean = np.cumsum(data_conv[:limit]) / np.arange(1, limit + 1)
-        fig_conv = px.line(y=running_mean, title=f"Mean STOIIP Stability (First {limit} samples)", labels={'x': 'Iterations', 'y': 'Mean STOIIP'})
+        fig_conv = px.line(y=running_mean, title=f"Mean STOIIP Stability (First {limit} samples)",
+                           labels={'x': 'Iterations', 'y': 'Mean STOIIP'})
         fig_conv.update_traces(line_color='#1F4E78')
         st.plotly_chart(fig_conv, use_container_width=True)
 
